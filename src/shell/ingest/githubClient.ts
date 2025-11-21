@@ -1,4 +1,3 @@
-import type * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
 import { match, P } from "ts-pattern";
 import type {
@@ -16,12 +15,7 @@ import type {
 
 const GITHUB_API = "https://api.github.com";
 
-const toUserError = (error: Cause.UnknownException): Error =>
-	new Error(error.message);
-
-const mapUnknownError = <A>(
-	effect: Effect.Effect<A, Cause.UnknownException>,
-): Effect.Effect<A, Error> => Effect.mapError(effect, toUserError);
+const fallbackError = (): Error => new Error("GitHub request failed");
 
 const buildHeaders = (token?: string): Record<string, string> => {
 	const trimmedToken = token?.trim();
@@ -40,11 +34,10 @@ export const validateToken = (token: string): Effect.Effect<boolean, Error> =>
 	Effect.gen(function* (_) {
 		const headers = buildHeaders(token);
 		const res = yield* _(
-			mapUnknownError(
-				Effect.tryPromise<Response>((signal) =>
-					fetch(`${GITHUB_API}/rate_limit`, { headers, signal }),
-				),
-			),
+			Effect.tryPromise<Response, Error>({
+				try: (signal) => fetch(`${GITHUB_API}/rate_limit`, { headers, signal }),
+				catch: fallbackError,
+			}),
 		);
 		if (res.status === 401) return false;
 		if (res.status === 403) {
@@ -75,7 +68,12 @@ const parseRateLimitError = (
 		const resetAt = resetHeader
 			? Number.parseInt(resetHeader, 10) * 1000
 			: undefined;
-		const body = yield* _(mapUnknownError(Effect.tryPromise(() => res.text())));
+		const body = yield* _(
+			Effect.tryPromise<string, Error>({
+				try: () => res.text(),
+				catch: fallbackError,
+			}),
+		);
 		if (resetAt === undefined) {
 			return {
 				_tag: "RateLimit",
@@ -90,10 +88,16 @@ const parseRateLimitError = (
 	});
 
 const readBody = (res: Response): Effect.Effect<string, Error> =>
-	mapUnknownError(Effect.tryPromise(() => res.text()));
+	Effect.tryPromise<string, Error>({
+		try: () => res.text(),
+		catch: fallbackError,
+	});
 
 const readJson = <T>(res: Response): Effect.Effect<T, Error> =>
-	mapUnknownError(Effect.tryPromise<T>(() => res.json()));
+	Effect.tryPromise<T, Error>({
+		try: () => res.json() as PromiseLike<T>,
+		catch: fallbackError,
+	});
 
 export class RateLimitExceeded extends Error {
 	constructor(
@@ -124,11 +128,10 @@ export const fetchJson = <T>(
 	Effect.gen(function* (_) {
 		const url = buildUrl(path, params);
 		const res = yield* _(
-			mapUnknownError(
-				Effect.tryPromise<Response>((signal) =>
-					fetch(url, { headers, signal }),
-				),
-			),
+			Effect.tryPromise<Response, Error>({
+				try: (signal) => fetch(url, { headers, signal }),
+				catch: fallbackError,
+			}),
 		);
 
 		if (res.status === 403) {

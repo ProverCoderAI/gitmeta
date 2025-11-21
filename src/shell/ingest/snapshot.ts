@@ -1,11 +1,11 @@
-export { buildArchiveText, extractNumber } from "./archive";
+export { buildArchiveText, extractNumber } from "./archive.js";
 export {
 	fetchSnapshot,
 	RateLimitExceeded,
 	toRateLimit,
 	validateToken,
-} from "./githubClient";
-export { buildIssueThread, buildPullThread, groupBy } from "./threads";
+} from "./githubClient.js";
+export { buildIssueThread, buildPullThread, groupBy } from "./threads.js";
 export type {
 	Issue,
 	IssueComment,
@@ -16,5 +16,5 @@ export type {
 	RepoSummary,
 	RepoTarget,
 	SnapshotData,
-} from "./types";
-export { buildZip } from "./zip";
+} from "./types.js";
+export { buildZip } from "./zip.js";

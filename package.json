@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "npx @ton-ai-core/vibecode-linter@latest src/",
+    "lint": "npx @ton-ai-core/vibecode-linter src/",
+    "test": "npm run lint && npm run build && npx @ton-ai-core/vibecode-linter test/ && vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -36,7 +37,9 @@
     "lovable-tagger": "^1.1.11",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.47.0",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.12"
   },
   "description": "A React application built with Vite and TypeScript",
   "keywords": [
