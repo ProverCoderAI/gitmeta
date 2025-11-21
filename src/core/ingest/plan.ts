@@ -47,12 +47,12 @@ const sanitizeOutputDir = (dir: string): string =>
 const defaultPathFor = (dir: string, child: string): string =>
 	`${dir}/${child}`;
 
-// CHANGE: Строим план выгрузки gitmeta без побочных эффектов, на основе валидных опций
-// WHY: UI должен опираться на чистое ядро — все пути и команды детерминированы исходными опциями
+// CHANGE: Build gitmeta export plan without side effects using validated options
+// WHY: UI must rely on the pure core—paths and commands are deterministic from options
 // QUOTE(ТЗ): "FUNCTIONAL CORE, IMPERATIVE SHELL"
 // REF: user-message-3
 // SOURCE: https://en.wikipedia.org/wiki/Pure_function
-// FORMAT THEOREM: ∀opt: valid(opt) → план корректен
+// FORMAT THEOREM: ∀opt: valid(opt) → plan is correct
 // PURITY: CORE
 // EFFECT: Effect<IngestPlan, PlanBuildError, never>
 // INVARIANT: manifestPath ∈ outputDir ∧ rawDir, llmDir ⊂ outputDir
@@ -95,7 +95,7 @@ export const buildIngestPlan = (
 				rawDir,
 				llmDir,
 				manifestPath,
-				summary: `Выгрузка ${target.owner}/${target.name} в ${validated.outputDir}`,
+				summary: `Export ${target.owner}/${target.name} to ${validated.outputDir}`,
 				cliCommand,
 				options: validated,
 			};

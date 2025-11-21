@@ -25,12 +25,12 @@ const RepoTargetSchema = Schema.Struct({
 
 const normalizeInput = (input: string): string => input.trim();
 
-// CHANGE: Нормализовать и верифицировать ввод репозитория в детерминированное представление
-// WHY: LLM-слой требует строгих ссылок owner/name и https-url перед построением ingest-плана
-// QUOTE(ТЗ): "CORE: Исключительно чистые функции, неизменяемые данные"
+// CHANGE: Normalize and verify repo input into a deterministic representation
+// WHY: LLM layer needs strict owner/name and https-url before building the ingest plan
+// QUOTE(ТЗ): "CORE: Pure functions only, immutable data"
 // REF: user-message-3
 // SOURCE: https://en.wikipedia.org/wiki/Pure_function ("the function return values are identical for identical arguments")
-// FORMAT THEOREM: ∀input: parse(input) = RepoTarget ⇔ input валиден по шаблону
+// FORMAT THEOREM: ∀input: parse(input) = RepoTarget ⇔ input matches pattern
 // PURITY: CORE
 // EFFECT: Effect<RepoTarget, RepoParseError, never>
 // INVARIANT: owner ≠ "" ∧ name ≠ "" ∧ host = github.com
@@ -43,7 +43,7 @@ export const parseRepoTarget = (
 		if (normalized.length === 0) {
 			return Effect.fail({
 				_tag: "EmptyInput",
-				message: "Введите ссылку на GitHub репозиторий.",
+				message: "Provide a GitHub repository URL.",
 			});
 		}
 
@@ -53,7 +53,7 @@ export const parseRepoTarget = (
 		if (match === null || match.groups === undefined) {
 			return Effect.fail({
 				_tag: "InvalidRepoUrl",
-				message: "Ожидается https://github.com/owner/name",
+				message: "Expected https://github.com/owner/name",
 			});
 		}
 
