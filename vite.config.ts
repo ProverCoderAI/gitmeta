@@ -24,7 +24,23 @@ const buildPlugins = (mode: string): PluginOption[] => {
   )
 }
 
+type DeployBase = '/' | `/${string}/`
+const GITHUB_PAGES_BASE: DeployBase = '/gitmeta/'
+
+// CHANGE: выбираем префикс путей сборки в зависимости от среды деплоя
+// WHY: GitHub Pages публикует проект под /gitmeta/, поэтому абсолютные ссылки должны быть префиксованы
+// QUOTE(ТЗ): "а как сделать что бы всё работало в github pages?"
+// REF: user request about GitHub Pages assets returning 404
+// SOURCE: https://vite.dev/guide/static-deploy.html#github-pages
+// FORMAT THEOREM: ∀mode ∈ {"github-pages", dev}: mode = "github-pages" → base = "/gitmeta/"
+// PURITY: CORE
+// INVARIANT: mode === "github-pages" ⇒ resolvedBase === "/gitmeta/"
+// COMPLEXITY: O(1)/O(1)
+const resolveBase = (mode: string): DeployBase =>
+  mode === 'github-pages' ? GITHUB_PAGES_BASE : '/'
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: resolveBase(mode),
   plugins: buildPlugins(mode),
 }))
